@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wedding Budget Planner - Offline Edition v32</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: hsl(280, 85%, 60%);
+            --primary-foreground: hsl(0, 0%, 98%);
+            --secondary: hsl(220, 10%, 85%);
+            --secondary-foreground: hsl(220, 15%, 20%);
+            --accent: hsl(320, 50%, 85%);
+            --accent-foreground: hsl(220, 15%, 20%);
+            --background: hsl(0, 0%, 98%);
+            --foreground: hsl(220, 15%, 20%);
+            --card: hsl(0, 0%, 95%);
+            --card-foreground: hsl(220, 15%, 20%);
+            --border: hsl(220, 13%, 91%);
+            --muted: hsl(220, 8%, 88%);
+            --muted-foreground: hsl(220, 12%, 40%);
+            --destructive: hsl(0, 84%, 60%);
+            --destructive-foreground: hsl(0, 0%, 98%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--muted-foreground);
+            font-size: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--muted-foreground);
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--foreground);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: var(--primary-foreground);
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .budget-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+        }
+
+        .stat-label {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--foreground);
+        }
+
+        .stat-value.over-budget {
+            color: var(--destructive);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--muted);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .progress-fill.over {
+            background: var(--destructive);
+        }
+
+        .category-item {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        /* Custom Confirm Dialog */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-dialog {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--foreground);
+        }
+
+        .modal-message {
+            color: var(--muted-foreground);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .modal-btn-secondary {
+            background: var(--secondary);
+            color: var(--secondary-foreground);
+        }
+
+        .modal-btn-secondary:hover {
+            opacity: 0.9;
+        }
+
+        .badge-success {
+            background: hsl(142, 76%, 36%);
+            color: white;
+        }
+
+        .badge-warning {
+            background: hsl(38, 92%, 50%);
+            color: white;
+        }
+
+        .badge-danger {
+            background: var(--destructive);
+            color: var(--destructive-foreground);
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .editable {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            transition: background 0.2s;
+        }
+
+        .editable:hover {
+            background: var(--accent);
+        }
+
+        .delete-btn {
+            background: transparent;
+            color: var(--destructive);
+            border: 1px solid var(--destructive);
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .ai-suggestion {
+            background: linear-gradient(135deg, hsl(280, 85%, 96%), hsl(320, 70%, 96%));
+            border: 1px solid var(--primary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .ai-icon {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .seating-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .table-card {
+            background: white;
+            border: 2px dashed var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .table-card:hover {
+            border-color: var(--primary);
+            background: var(--accent);
+        }
+
+        .table-card.filled {
+            border-style: solid;
+            border-color: var(--primary);
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            /* Hide UI elements but NOT .editable content */
+            .tabs, button, .delete-btn, header .subtitle {
+                display: none !important;
+            }
+            
+            /* Make editable content visible and static */
+            .editable {
+                display: inline !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                cursor: default !important;
+            }
+            
+            /* HIDE all tabs by default */
+            .tab-content {
+                display: none !important;
+            }
+            
+            /* ONLY show tabs marked with print-active */
+            .tab-content.print-active {
+                display: block !important;
+            }
+            
+            /* BUDGET DETAILS - Aligned columns with proper wrapping */
+            .item-row {
+                display: table !important;
+                width: 100% !important;
+                border-bottom: 1px solid #d1d5db !important;
+                padding: 0.5rem 0 !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .item-row > div,
+            .item-row > span {
+                display: table-cell !important;
+                padding: 0.25rem 0.5rem !important;
+                vertical-align: top !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                font-size: 0.875rem !important;
+                line-height: 1.4 !important;
+            }
+            
+            /* First column (Name/Vendor) - wider */
+            .item-row > div:first-child {
+                width: 30% !important;
+            }
+            
+            /* Est/Actual columns - equal width */
+            .item-row > div:nth-child(2),
+            .item-row > div:nth-child(3) {
+                width: 25% !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            /* Badge column */
+            .item-row > span,
+            .item-row > div:nth-child(4) {
+                width: 15% !important;
+                text-align: center !important;
+            }
+            
+            /* Last column (would be delete button, hidden) */
+            .item-row > div:last-child,
+            .item-row > button {
+                display: none !important;
+            }
+            
+            /* Guest list - different column widths */
+            #guest-list .item-row > div:first-child {
+                width: 35% !important;
+            }
+            
+            #guest-list .item-row > div:nth-child(2) {
+                width: 15% !important;
+                text-align: center !important;
+            }
+            
+            #guest-list .item-row > div:nth-child(3) {
+                width: 25% !important;
+            }
+            
+            #guest-list .item-row > div:nth-child(4) {
+                width: 20% !important;
+            }
+            
+            /* Badges in print */
+            .badge {
+                display: inline-block !important;
+                padding: 0.125rem 0.5rem !important;
+                font-size: 0.7rem !important;
+                border: 1px solid #d1d5db !important;
+                border-radius: 0.25rem !important;
+                background: white !important;
+                color: black !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+            
+            /* SEATING CHART - Clear line breaks */
+            .seating-grid {
+                display: block !important;
+            }
+            
+            .table-card {
+                display: block !important;
+                padding: 1rem !important;
+                margin-bottom: 1.5rem !important;
+                border: 1px solid #000 !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .table-card strong {
+                display: block !important;
+                font-weight: bold !important;
+                margin-bottom: 0.5rem !important;
+                border-bottom: 1px solid #ccc !important;
+                padding-bottom: 0.25rem !important;
+            }
+            
+            .table-card div {
+                display: block !important;
+                margin: 0.25rem 0 !important;
+                line-height: 1.6 !important;
+            }
+            
+            /* Timeline items */
+            .timeline-item {
+                display: block !important;
+                padding: 0.75rem !important;
+                margin-bottom: 0.75rem !important;
+                border: 1px solid #000 !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            
+            /* Make all text visible and black */
+            .amount, .badge, .guest-name, .item-details, span, p, div {
+                opacity: 1 !important;
+                visibility: visible !important;
+                color: black !important;
+            }
+            
+            /* Card styling */
+            .card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                margin-bottom: 2rem !important;
+                border: 1px solid #000 !important;
+                padding: 1rem !important;
+            }
+            
+            .card-header {
+                border-bottom: 2px solid #000 !important;
+                padding-bottom: 0.75rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .category-name {
+                font-size: 1.125rem !important;
+                font-weight: 600 !important;
+            }
+            
+            /* Typography */
+            h1 {
+                font-size: 2rem !important;
+                margin-bottom: 1rem !important;
+                color: black !important;
+            }
+            
+            h2 {
+                font-size: 1.5rem !important;
+                color: black !important;
+            }
+            
+            /* Remove unnecessary spacing */
+            .stat-card, .budget-overview {
+                margin-bottom: 1rem !important;
+            }
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-warning {
+            background: hsl(38, 100%, 95%);
+            border: 1px solid hsl(38, 92%, 50%);
+            color: hsl(38, 92%, 25%);
+        }
+
+        .alert-success {
+            background: hsl(142, 76%, 95%);
+            border: 1px solid hsl(142, 76%, 36%);
+            color: hsl(142, 76%, 25%);
+        }
+
+        .timeline-item {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            background: var(--card);
+        }
+
+        .timeline-item.completed {
+            background: hsl(142, 76%, 96%);
+            border-color: hsl(142, 76%, 50%);
+        }
+
+        .timeline-item.overdue {
+            background: hsl(0, 84%, 96%);
+            border-color: hsl(0, 84%, 60%);
+        }
+
+        .timeline-item.upcoming {
+            background: hsl(38, 100%, 96%);
+            border-color: hsl(38, 92%, 50%);
+        }
+
+        .timeline-item.pending {
+            opacity: 0.8;
+        }
+
+        .timeline-item.wedding-day {
+            background: linear-gradient(135deg, hsl(280, 85%, 96%) 0%, hsl(320, 70%, 96%) 100%);
+            border: 2px solid var(--primary);
+            font-size: 1.1rem;
+            padding: 1.5rem;
+        }
+
+        /* Modal Overlay System */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-option {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            width: 100%;
+        }
+
+        .modal-option:hover {
+            background: var(--accent);
+            border-color: var(--primary);
+        }
+
+        .modal-option-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-option-description {
+            color: var(--muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💍 Wedding Budget Planner</h1>
+            <p class="subtitle">Offline Edition v32 - All your data stays private on your computer</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('dashboard', this)">Dashboard</button>
+            <button class="tab" onclick="switchTab('budget', this)">Budget Details</button>
+            <button class="tab" onclick="switchTab('guests', this)">Guest List</button>
+            <button class="tab" onclick="switchTab('seating', this)">Seating Chart</button>
+            <button class="tab" onclick="switchTab('timeline', this)">Timeline</button>
+            <button class="tab" onclick="switchTab('settings', this)">Settings</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Wedding Budget Overview</h2>
+                <button onclick="printPlanner()" style="display: flex; align-items: center; gap: 0.5rem;">
+                    🖨️ Print Complete Planner
+                </button>
+            </div>
+            <div class="budget-overview">
+                <div class="stat-card">
+                    <div class="stat-label">Total Budget</div>
+                    <div class="stat-value">$<span id="total-budget-display">0</span></div>
+                    <button onclick="editBudget()" class="btn-sm btn-outline" style="margin-top: 0.5rem;">Edit</button>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value">$<span id="total-spent-display">0</span></div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Remaining</div>
+                    <div class="stat-value" id="remaining-display">$0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Cushion Fund (10%)</div>
+                    <div class="stat-value">$<span id="cushion-fund-display">0</span></div>
+                    <div class="stat-label" style="margin-top: 0.5rem; font-size: 0.75rem;">Reserved buffer amount</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Guest Count</div>
+                    <div class="stat-value"><span id="guest-count-display">0</span></div>
+                    <div class="stat-label" style="margin-top: 0.5rem;">Cost per Guest: $<span id="cost-per-guest">0</span></div>
+                </div>
+            </div>
+
+            <div id="ai-suggestions-container"></div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Budget Categories</h2>
+                </div>
+                <div id="categories-summary"></div>
+            </div>
+        </div>
+
+        <!-- Budget Details Tab -->
+        <div id="budget" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Detailed Budget Breakdown</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="printBudgetDetails()">🖨️ Print</button>
+                        <button onclick="addBudgetItem()">+ Add Item</button>
+                    </div>
+                </div>
+                <div id="budget-categories"></div>
+            </div>
+        </div>
+
+        <!-- Guest List Tab -->
+        <div id="guests" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Guest Management</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="printGuestList()">🖨️ Print</button>
+                        <button onclick="addGuest()">+ Add Guest</button>
+                    </div>
+                </div>
+                <div class="grid grid-3" style="margin-bottom: 1.5rem;">
+                    <div class="input-group">
+                        <label>Total Invited (auto-counted)</label>
+                        <input type="number" id="guests-invited" value="0" readonly style="background: var(--muted); cursor: not-allowed;">
+                    </div>
+                    <div class="input-group">
+                        <label>Total RSVP'd</label>
+                        <input type="number" id="guests-rsvpd" value="0" readonly style="background: var(--muted); cursor: not-allowed;">
+                    </div>
+                    <div class="input-group">
+                        <label>Confirmed (Said Yes)</label>
+                        <input type="number" id="guests-confirmed" value="0" readonly style="background: var(--muted); cursor: not-allowed;">
+                    </div>
+                </div>
+                <div id="guest-list"></div>
+            </div>
+        </div>
+
+        <!-- Seating Chart Tab -->
+        <div id="seating" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Seating Chart</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="printSeatingChart()">🖨️ Print</button>
+                        <button onclick="addTable()">+ Add Table</button>
+                    </div>
+                </div>
+                <div id="seating-chart" class="seating-grid"></div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div id="timeline" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Wedding Planning Timeline</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button data-testid="button-add-event" onclick="addCustomTimelineItem()">+ Add Event</button>
+                        <button onclick="printTimeline()">🖨️ Print</button>
+                    </div>
+                </div>
+                <div class="input-group" style="max-width: 300px; margin-bottom: 2rem;">
+                    <label>Wedding Date</label>
+                    <input type="date" id="wedding-date" onchange="updateTimeline()">
+                </div>
+                <div id="timeline-content"></div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1rem;">Data Management</h2>
+                <div class="grid grid-2">
+                    <button onclick="exportData()">📥 Export Data (Backup)</button>
+                    <button onclick="importData()" class="btn-secondary">📤 Import Data</button>
+                    <button onclick="printPlanner()" class="btn-secondary">🖨️ Print Planner</button>
+                    <button onclick="clearAllData()" class="btn-secondary">🗑️ Clear All Data</button>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 1rem;">Instructions</h2>
+                <p style="margin-bottom: 0.5rem;"><strong>✅ Everything saves automatically</strong> - Your data is stored in your browser</p>
+                <p style="margin-bottom: 0.5rem;"><strong>🖊️ Click to edit</strong> - All numbers and text can be edited directly</p>
+                <p style="margin-bottom: 0.5rem;"><strong>📥 Export regularly</strong> - Download backups to keep your data safe</p>
+                <p style="margin-bottom: 0.5rem;"><strong>🖨️ Print anytime</strong> - Budget, guest list, seating chart, and timeline</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Dialog -->
+    <div id="customConfirm" class="modal-overlay">
+        <div class="modal-dialog">
+            <div class="modal-title" id="confirmTitle">Confirm</div>
+            <div class="modal-message" id="confirmMessage"></div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" id="confirmNo">No - Lump Sum</button>
+                <button class="modal-btn modal-btn-primary" id="confirmYes">Yes - Per Person</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Error handler for debugging
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            alert('JavaScript Error:\n' + msg + '\nLine: ' + lineNo + '\n\nPlease report this to support.');
+            return false;
+        };
+        
+        // Custom Confirm Dialog Function (works on all browsers)
+        function customConfirm(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customConfirm');
+                const titleEl = document.getElementById('confirmTitle');
+                const messageEl = document.getElementById('confirmMessage');
+                const yesBtn = document.getElementById('confirmYes');
+                const noBtn = document.getElementById('confirmNo');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                modal.classList.add('active');
+                
+                function cleanup() {
+                    modal.classList.remove('active');
+                    yesBtn.removeEventListener('click', handleYes);
+                    noBtn.removeEventListener('click', handleNo);
+                }
+                
+                function handleYes() {
+                    cleanup();
+                    resolve(true);
+                }
+                
+                function handleNo() {
+                    cleanup();
+                    resolve(false);
+                }
+                
+                yesBtn.addEventListener('click', handleYes);
+                noBtn.addEventListener('click', handleNo);
+            });
+        }
+        
+        // Data Model
+        let weddingData = {
+            totalBudget: 25000,
+            weddingDate: null,
+            categories: [
+                { id: 'venue', name: 'Venue', icon: '🏛️', budget: 7000, items: [] },
+                { id: 'catering', name: 'Catering & Bar', icon: '🍽️', budget: 6000, items: [] },
+                { id: 'photography', name: 'Photography & Videography', icon: '📸', budget: 2500, items: [] },
+                { id: 'attire', name: 'Attire & Beauty', icon: '👗', budget: 2000, items: [] },
+                { id: 'entertainment', name: 'Entertainment', icon: '🎵', budget: 1500, items: [] },
+                { id: 'florals', name: 'Decorations & Florals', icon: '🌸', budget: 1500, items: [] },
+                { id: 'stationery', name: 'Stationery & Favors', icon: '💌', budget: 800, items: [] },
+                { id: 'transportation', name: 'Transportation', icon: '🚗', budget: 800, items: [] },
+                { id: 'invitations', name: 'Invitations', icon: '✉️', budget: 500, items: [] },
+                { id: 'misc', name: 'Miscellaneous', icon: '📋', budget: 1400, items: [] }
+            ],
+            guests: {
+                invited: 0,
+                rsvpd: 0,
+                confirmed: 0,
+                list: []
+            },
+            seating: {
+                tables: []
+            },
+            customTimeline: []
+        };
+
+        // Timeline milestones with category mappings
+        const timelineMilestones = [
+            { months: 12, title: 'Book Venue', description: 'Secure ceremony & reception venue', categoryId: 'venue' },
+            { months: 10, title: 'Book Photographer', description: 'Hire professional photographer/videographer', categoryId: 'photography' },
+            { months: 10, title: 'Book Caterer', description: 'Secure catering services', categoryId: 'catering' },
+            { months: 9, title: 'Book Entertainment', description: 'Book DJ, band, or musicians', categoryId: 'entertainment' },
+            { months: 9, title: 'Order Flowers', description: 'Choose florist for bouquets & decorations', categoryId: 'florals' },
+            { months: 8, title: 'Order Wedding Attire', description: 'Purchase dress, suit, and accessories', categoryId: 'attire' },
+            { months: 6, title: 'Order Invitations', description: 'Design and order wedding invitations', categoryId: 'invitations' },
+            { months: 4, title: 'Book Transportation', description: 'Arrange limos, shuttles, or cars', categoryId: 'transportation' },
+            { months: 3, title: 'Order Favors & Stationery', description: 'Purchase guest favors and programs', categoryId: 'stationery' },
+            { months: 2, title: 'Final Venue Walkthrough', description: 'Confirm venue details', categoryId: 'venue' },
+            { months: 1, title: 'Finalize All Vendors', description: 'Confirm all bookings', categoryId: null },
+            { months: 0, title: '💍 WEDDING DAY!', description: 'Celebrate your special day!', categoryId: null, isWeddingDay: true }
+        ];
+
+        // Wedding Consultant Timeline Event Suggestions
+        const timelineEventSuggestions = [
+            { title: 'Engagement Party', description: 'Celebrate with family and friends' },
+            { title: 'Meet with Officiant', description: 'Discuss ceremony details and requirements' },
+            { title: 'Cake Tasting', description: 'Sample and choose wedding cake flavors' },
+            { title: 'Menu Tasting', description: 'Taste and select reception menu items' },
+            { title: 'Dress Fitting #1', description: 'First dress fitting and alterations' },
+            { title: 'Dress Fitting #2', description: 'Second dress fitting check' },
+            { title: 'Final Dress Fitting', description: 'Final dress fitting before wedding' },
+            { title: 'Hair & Makeup Trial', description: 'Practice wedding day look' },
+            { title: 'Bridal Shower', description: 'Celebrate with bridesmaids and family' },
+            { title: 'Bachelor Party', description: 'Groom\'s celebration with friends' },
+            { title: 'Bachelorette Party', description: 'Bride\'s celebration with friends' },
+            { title: 'Rehearsal Dinner', description: 'Practice ceremony and dinner with wedding party' },
+            { title: 'Get Marriage License', description: 'Obtain legal marriage license' },
+            { title: 'Final Vendor Meetings', description: 'Confirm details with all vendors' },
+            { title: 'Ceremony Rehearsal', description: 'Walk through ceremony with wedding party' },
+            { title: 'Wedding Day!', description: 'Your big day has arrived!' }
+        ];
+
+        // Wedding Consultant Expert Suggestions by Category
+        const categorySuggestions = {
+            venue: [
+                { name: 'Ceremony Venue', cost: 2500 },
+                { name: 'Reception Venue', cost: 4500 },
+                { name: 'Venue Coordinator Fee', cost: 800 },
+                { name: 'Overtime Charges', cost: 500 },
+                { name: 'Valet Parking', cost: 400 },
+                { name: 'Site Rental Fee', cost: 1500 }
+            ],
+            catering: [
+                { name: 'Food Per Person', cost: 75 },
+                { name: 'Bar Service', cost: 35 },
+                { name: 'Wedding Cake', cost: 800 },
+                { name: 'Cake Cutting Fee', cost: 150 },
+                { name: 'Champagne Toast', cost: 300 },
+                { name: 'Late Night Snacks', cost: 400 },
+                { name: 'Catering Staff Gratuity', cost: 600 }
+            ],
+            photography: [
+                { name: 'Photographer (8 hours)', cost: 2500 },
+                { name: 'Videographer', cost: 1800 },
+                { name: 'Engagement Photos', cost: 400 },
+                { name: 'Photo Album', cost: 500 },
+                { name: 'Digital Photo Package', cost: 300 },
+                { name: 'Prints & Frames', cost: 250 },
+                { name: 'Photo Booth', cost: 800 }
+            ],
+            attire: [
+                { name: 'Wedding Dress', cost: 1500 },
+                { name: 'Dress Alterations', cost: 300 },
+                { name: 'Veil & Accessories', cost: 200 },
+                { name: 'Bridal Shoes', cost: 150 },
+                { name: 'Jewelry', cost: 250 },
+                { name: 'Groom\'s Suit/Tux', cost: 600 },
+                { name: 'Hair Trial', cost: 75 },
+                { name: 'Makeup Trial', cost: 85 },
+                { name: 'Wedding Day Hair', cost: 150 },
+                { name: 'Wedding Day Makeup', cost: 150 },
+                { name: 'Bridesmaids Gifts', cost: 300 },
+                { name: 'Groomsmen Gifts', cost: 300 }
+            ],
+            entertainment: [
+                { name: 'DJ (4 hours)', cost: 1200 },
+                { name: 'Live Band', cost: 2500 },
+                { name: 'Ceremony Musician', cost: 400 },
+                { name: 'Cocktail Hour Music', cost: 350 },
+                { name: 'Sound System Rental', cost: 300 },
+                { name: 'Lighting Package', cost: 800 }
+            ],
+            florals: [
+                { name: 'Bridal Bouquet', cost: 250 },
+                { name: 'Bridesmaids Bouquets', cost: 500 },
+                { name: 'Boutonnieres', cost: 150 },
+                { name: 'Centerpieces', cost: 800 },
+                { name: 'Ceremony Arch Flowers', cost: 400 },
+                { name: 'Aisle Decorations', cost: 300 },
+                { name: 'Reception Entrance', cost: 250 },
+                { name: 'Cake Flowers', cost: 100 }
+            ],
+            stationery: [
+                { name: 'Guest Favors', cost: 300 },
+                { name: 'Ceremony Programs', cost: 150 },
+                { name: 'Menu Cards', cost: 200 },
+                { name: 'Place Cards', cost: 100 },
+                { name: 'Table Numbers', cost: 80 },
+                { name: 'Thank You Cards', cost: 150 },
+                { name: 'Guest Book', cost: 75 }
+            ],
+            transportation: [
+                { name: 'Bride & Groom Limo', cost: 600 },
+                { name: 'Guest Shuttle Service', cost: 500 },
+                { name: 'Valet Service', cost: 400 },
+                { name: 'Getaway Car', cost: 300 },
+                { name: 'Airport Transportation', cost: 200 }
+            ],
+            invitations: [
+                { name: 'Save the Dates', cost: 200 },
+                { name: 'Wedding Invitations', cost: 400 },
+                { name: 'RSVP Cards', cost: 100 },
+                { name: 'Postage', cost: 150 },
+                { name: 'Day-of Stationery', cost: 100 },
+                { name: 'Envelope Addressing', cost: 150 }
+            ],
+            misc: [
+                { name: 'Wedding Planner', cost: 2000 },
+                { name: 'Marriage License', cost: 75 },
+                { name: 'Officiant Fee', cost: 400 },
+                { name: 'Rehearsal Dinner', cost: 1000 },
+                { name: 'Gifts for Parents', cost: 300 },
+                { name: 'Vendor Tips/Gratuity', cost: 500 },
+                { name: 'Wedding Insurance', cost: 200 },
+                { name: 'Hotel Rooms for Guests', cost: 800 }
+            ]
+        };
+
+        // Safari-safe localStorage wrapper
+        var storageAvailable = false;
+        var storageWarningShown = false;
+        
+        function checkStorageAvailable() {
+            try {
+                var test = '__storage_test__';
+                localStorage.setItem(test, test);
+                localStorage.removeItem(test);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        function showStorageWarning() {
+            if (!storageWarningShown) {
+                storageWarningShown = true;
+                alert('⚠️ Storage Notice:\n\nYour browser has disabled data storage for local files. Your wedding data will work during this session but won\'t be saved between sessions.\n\nTo enable saving:\n• Use Safari: Develop > Disable Local File Restrictions\n• Or open this file from a web server\n• Or use Chrome/Firefox which allow local storage');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            storageAvailable = checkStorageAvailable();
+            loadData();
+            renderDashboard();
+            renderBudgetDetails();
+            renderGuestList();
+            renderSeatingChart();
+            renderTimeline();
+            showAISuggestions();
+        });
+
+        // Tab switching
+        function switchTab(tabName, clickedElement) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            }
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // Save/Load Data
+        function saveData() {
+            if (!storageAvailable) {
+                return; // Silently skip if storage unavailable
+            }
+            try {
+                localStorage.setItem('weddingPlannerData', JSON.stringify(weddingData));
+            } catch (e) {
+                console.error('Failed to save data:', e);
+            }
+        }
+
+        function loadData() {
+            if (!storageAvailable) {
+                showStorageWarning();
+                return;
+            }
+            try {
+                var saved = localStorage.getItem('weddingPlannerData');
+                if (saved) {
+                    weddingData = JSON.parse(saved);
+                    
+                    // Ensure all required properties exist (for backwards compatibility)
+                    if (!weddingData.customTimeline) {
+                        weddingData.customTimeline = [];
+                    }
+                    if (!weddingData.guests) {
+                        weddingData.guests = { invited: 0, rsvpd: 0, confirmed: 0, list: [] };
+                    }
+                    if (!weddingData.seating) {
+                        weddingData.seating = { tables: [] };
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load data:', e);
+                showStorageWarning();
+            }
+        }
+
+        // Dashboard
+        // Recalculate all per-person budget items based on total invited guest count
+        function recalculatePerPersonItems() {
+            // Use total invited for ESTIMATES (budget for everyone invited)
+            // Use confirmed for ACTUALS (only pay for confirmed guests)
+            const totalInvited = weddingData.guests.invited || 0;
+            const confirmedGuests = weddingData.guests.confirmed || 0;
+            let updated = false;
+            
+            weddingData.categories.forEach(cat => {
+                cat.items.forEach(item => {
+                    if (item.isPerPerson && item.perPersonRate) {
+                        const newEstimated = item.perPersonRate * totalInvited;
+                        if (item.estimatedCost !== newEstimated) {
+                            item.estimatedCost = newEstimated;
+                            updated = true;
+                        }
+                        
+                        // Recalculate actual cost using CONFIRMED guests (only pay for those coming)
+                        if (item.actualPerPersonRate) {
+                            item.actualCost = item.actualPerPersonRate * confirmedGuests;
+                        }
+                    }
+                });
+            });
+            
+            if (updated) {
+                saveData();
+            }
+            
+            return updated;
+        }
+
+        function renderDashboard() {
+            const totalSpent = calculateTotalSpent();
+            const remaining = weddingData.totalBudget - totalSpent;
+            const percentage = (totalSpent / weddingData.totalBudget) * 100;
+            const totalGuests = weddingData.guests.confirmed || weddingData.guests.invited;
+            const costPerGuest = totalGuests > 0 ? (totalSpent / totalGuests).toFixed(0) : 0;
+            const cushionFund = (weddingData.totalBudget * 0.10);
+
+            document.getElementById('total-budget-display').textContent = weddingData.totalBudget.toLocaleString();
+            document.getElementById('total-spent-display').textContent = totalSpent.toLocaleString();
+            document.getElementById('remaining-display').textContent = (remaining < 0 ? '-$' : '$') + Math.abs(remaining).toLocaleString();
+            document.getElementById('remaining-display').className = 'stat-value' + (remaining < 0 ? ' over-budget' : '');
+            document.getElementById('cushion-fund-display').textContent = cushionFund.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            document.getElementById('guest-count-display').textContent = totalGuests;
+            document.getElementById('cost-per-guest').textContent = costPerGuest;
+
+            const progressFill = document.getElementById('progress-fill');
+            progressFill.style.width = Math.min(percentage, 100) + '%';
+            progressFill.className = 'progress-fill' + (percentage > 100 ? ' over' : '');
+
+            // Categories summary
+            const categoriesHtml = weddingData.categories.map(cat => {
+                const spent = calculateCategorySpent(cat.id);
+                const percent = cat.budget > 0 ? (spent / cat.budget) * 100 : 0;
+                const status = percent > 100 ? 'danger' : percent > 80 ? 'warning' : 'success';
+                return `
+                    <div class="category-item">
+                        <div class="category-header">
+                            <div class="category-name">${cat.icon} ${cat.name}</div>
+                            <span class="badge badge-${status}">${cat.items.length} items</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Budget: $${cat.budget.toLocaleString()}</span>
+                            <span>Spent: $${spent.toLocaleString()}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${percent > 100 ? 'over' : ''}" style="width: ${Math.min(percent, 100)}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('categories-summary').innerHTML = categoriesHtml;
+        }
+
+        function editBudget() {
+            const newBudget = prompt('Enter total wedding budget (Demo limited to $5,000):', weddingData.totalBudget);
+            if (newBudget && !isNaN(newBudget)) {
+                const budget = parseFloat(newBudget);
+                if (budget > 5000) {
+                    alert('Demo version is limited to $5,000 budget. Please enter a lower amount.');
+                    return;
+                }
+                weddingData.totalBudget = budget;
+                saveData();
+                renderDashboard();
+                renderBudgetDetails();
+            }
+        }
+
+        function calculateTotalSpent() {
+            return weddingData.categories.reduce((total, cat) => {
+                return total + cat.items.reduce((sum, item) => sum + (item.actualCost ?? item.estimatedCost ?? 0), 0);
+            }, 0);
+        }
+
+        function calculateCategorySpent(categoryId) {
+            const cat = weddingData.categories.find(c => c.id === categoryId);
+            return cat.items.reduce((sum, item) => sum + (item.actualCost ?? item.estimatedCost ?? 0), 0);
+        }
+
+        // Budget Details
+        function renderBudgetDetails() {
+            const html = weddingData.categories.map(cat => `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="category-name">${cat.icon} ${cat.name}</div>
+                        <div>
+                            <span style="margin-right: 1rem;">Budget: $<span class="editable" onclick="editCategoryBudget('${cat.id}')">${cat.budget.toLocaleString()}</span></span>
+                            <button class="btn-sm" onclick="addItemToCategory('${cat.id}')">+ Add Item</button>
+                        </div>
+                    </div>
+                    ${cat.items.length === 0 ? '<p style="color: var(--muted-foreground); text-align: center;">No items yet. Click "+ Add Item" to get started.</p>' : cat.items.map((item, idx) => {
+                        const estimated = item.estimatedCost || 0;
+                        const actual = item.actualCost;
+                        let varianceBadge = '';
+                        
+                        if (actual !== null && actual !== undefined && actual !== 0) {
+                            const difference = actual - estimated;
+                            if (difference > 0) {
+                                // Over budget - red
+                                varianceBadge = `<span class="badge" style="background: #dc2626; color: white;">+$${difference.toLocaleString()} over</span>`;
+                            } else if (difference < 0) {
+                                // Under budget - green
+                                varianceBadge = `<span class="badge" style="background: #16a34a; color: white;">$${Math.abs(difference).toLocaleString()} under</span>`;
+                            } else {
+                                // Exactly on budget
+                                varianceBadge = `<span class="badge" style="background: #0891b2; color: white;">On budget</span>`;
+                            }
+                        } else {
+                            // No actual cost entered yet
+                            varianceBadge = `<span class="badge badge-secondary">Pending</span>`;
+                        }
+                        
+                        // Build cost display with per-person notation
+                        const totalInvited = weddingData.guests.invited || 0;
+                        const confirmedGuests = weddingData.guests.confirmed || 0;
+                        let estDisplay = '';
+                        let actualDisplay = '';
+                        
+                        if (item.isPerPerson && item.perPersonRate) {
+                            estDisplay = `$${item.perPersonRate.toLocaleString()}/person × ${totalInvited} guests = $${estimated.toLocaleString()}`;
+                        } else {
+                            estDisplay = `$${estimated.toLocaleString()}`;
+                        }
+                        
+                        if (actual !== null && actual !== undefined && actual !== 0) {
+                            if (item.isPerPerson && item.actualPerPersonRate) {
+                                actualDisplay = `$${item.actualPerPersonRate.toLocaleString()}/person × ${confirmedGuests} guests = $${actual.toLocaleString()}`;
+                            } else {
+                                actualDisplay = `$${actual.toLocaleString()}`;
+                            }
+                        } else {
+                            actualDisplay = '-';
+                        }
+                        
+                        return `
+                        <div class="item-row">
+                            <div>
+                                <strong class="editable" onclick="editItemField('${cat.id}', ${idx}, 'name')">${item.name}</strong>
+                                ${item.vendor ? `<div style="font-size: 0.875rem; color: var(--muted-foreground);">${item.vendor}</div>` : ''}
+                                ${item.isPerPerson ? `<span class="badge badge-secondary" style="font-size: 0.7rem; margin-left: 0.5rem;">Per Person</span>` : ''}
+                            </div>
+                            <div style="font-size: 0.875rem;">Est: <span class="editable" onclick="editItemField('${cat.id}', ${idx}, 'estimatedCost')">${estDisplay}</span></div>
+                            <div style="font-size: 0.875rem;">Actual: <span class="editable" onclick="editItemField('${cat.id}', ${idx}, 'actualCost')">${actualDisplay}</span></div>
+                            ${varianceBadge}
+                            <button class="delete-btn" onclick="deleteItem('${cat.id}', ${idx})">Delete</button>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `).join('');
+            document.getElementById('budget-categories').innerHTML = html;
+        }
+
+        function addBudgetItem() {
+            const category = prompt('Which category? (venue, catering, photography, attire, entertainment, florals, stationery, transportation, invitations, misc)');
+            const cat = weddingData.categories.find(c => c.id === category);
+            if (!cat) {
+                alert('Invalid category!');
+                return;
+            }
+            addItemToCategory(category);
+        }
+
+        async function addItemToCategory(categoryId) {
+            const cat = weddingData.categories.find(c => c.id === categoryId);
+            const suggestions = categorySuggestions[categoryId] || [];
+            
+            // Build numbered list
+            let options = '📋 SUGGESTED ITEMS (enter number to select):\n\n';
+            suggestions.forEach((item, idx) => {
+                options += `${idx + 1}. ${item.name} (suggested: $${item.cost.toLocaleString()})\n`;
+            });
+            options += `\n${suggestions.length + 1}. ✏️ Add Custom Item\n\n`;
+            
+            const choice = prompt(options + 'Enter number:');
+            if (!choice) return;
+            
+            const choiceNum = parseInt(choice);
+            
+            let itemName = '';
+            let suggestedCost = null;
+            
+            if (choiceNum > 0 && choiceNum <= suggestions.length) {
+                // Selected a suggested item
+                const selected = suggestions[choiceNum - 1];
+                itemName = selected.name;
+                suggestedCost = selected.cost;
+            } else if (choiceNum === suggestions.length + 1) {
+                // Custom item
+                itemName = prompt('Enter custom item name:');
+                if (!itemName) return;
+            } else {
+                alert('Invalid selection');
+                return;
+            }
+            
+            // Ask if this is a per-person item with CLEAR buttons
+            const isPerPerson = await customConfirm(
+                `Is "${itemName}" priced per person?`,
+                `Click "Yes - Per Person" for items with costs per guest (like catering, favors, rentals).\n\nClick "No - Lump Sum" for one-time fixed costs (like venue, DJ, photographer).`
+            );
+            
+            console.log('[DEBUG] isPerPerson value:', isPerPerson, 'Type:', typeof isPerPerson);
+            
+            let estimatedCost = 0;
+            let perPersonRate = null;
+            
+            if (isPerPerson) {
+                console.log('[DEBUG] Entering per-person flow (isPerPerson === true)');
+                // Get per-person rate
+                const ratePrompt = suggestedCost 
+                    ? `Enter cost PER PERSON for ${itemName}:\n\n(Suggested: $${suggestedCost.toLocaleString()})`
+                    : `Enter cost PER PERSON for ${itemName}:`;
+                
+                const rate = prompt(ratePrompt, '');
+                if (rate === null) return;
+                
+                perPersonRate = parseFloat(rate) || 0;
+                
+                // Calculate total based on confirmed guests
+                const confirmedGuests = weddingData.guests.confirmed || 0;
+                estimatedCost = perPersonRate * confirmedGuests;
+                
+                if (confirmedGuests === 0) {
+                    alert(`Note: You have 0 confirmed guests. Add guests to see the calculated total.\n\nPer-person rate: $${perPersonRate}`);
+                }
+            } else {
+                console.log('[DEBUG] Entering fixed cost flow (isPerPerson === false)');
+                // Fixed cost
+                const costPrompt = suggestedCost 
+                    ? `Enter your estimated cost for ${itemName}:\n\n(Suggested: $${suggestedCost.toLocaleString()})`
+                    : `Enter estimated cost for ${itemName}:`;
+                
+                const cost = prompt(costPrompt, '');
+                if (cost === null) return;
+                estimatedCost = parseFloat(cost) || 0;
+                console.log('[DEBUG] Fixed cost set to:', estimatedCost);
+            }
+            
+            const vendor = prompt(`Vendor for ${itemName} (optional):`, '');
+            
+            const newItem = {
+                name: itemName,
+                vendor: vendor || '',
+                estimatedCost: estimatedCost,
+                actualCost: null,
+                status: 'Planned',
+                isPerPerson: isPerPerson,
+                perPersonRate: perPersonRate
+            };
+            
+            console.log('[DEBUG] Saving item:', JSON.stringify(newItem, null, 2));
+            cat.items.push(newItem);
+            
+            saveData();
+            renderBudgetDetails();
+            renderDashboard();
+            renderTimeline();
+            
+            alert(`✅ Added: ${itemName}`);
+        }
+
+        function getSuggestion(query) {
+            for (const [key, value] of Object.entries(suggestions)) {
+                if (query.includes(key)) {
+                    return value;
+                }
+            }
+            return null;
+        }
+
+        function editCategoryBudget(categoryId) {
+            const cat = weddingData.categories.find(c => c.id === categoryId);
+            const newBudget = prompt('Enter budget for ' + cat.name + ':', cat.budget);
+            if (newBudget && !isNaN(newBudget)) {
+                cat.budget = parseFloat(newBudget);
+                saveData();
+                renderBudgetDetails();
+                renderDashboard();
+            }
+        }
+
+        function editItemField(categoryId, itemIndex, field) {
+            const cat = weddingData.categories.find(c => c.id === categoryId);
+            const item = cat.items[itemIndex];
+            
+            // Special handling for per-person items when editing costs
+            if (field.includes('Cost') && item.isPerPerson) {
+                const rateField = field === 'estimatedCost' ? 'perPersonRate' : 'actualPerPersonRate';
+                const currentRate = item[rateField] || 0;
+                const confirmedGuests = weddingData.guests.confirmed || 0;
+                
+                const newRate = prompt(
+                    `Edit per-person rate for ${item.name}:\n\n` +
+                    `Current: $${currentRate}/person × ${confirmedGuests} guests = $${item[field] || 0}\n\n` +
+                    `Enter new rate per person:`,
+                    currentRate
+                );
+                
+                if (newRate !== null) {
+                    const rate = parseFloat(newRate) || 0;
+                    item[rateField] = rate;
+                    item[field] = rate * confirmedGuests;
+                    saveData();
+                    renderBudgetDetails();
+                    renderDashboard();
+                    renderTimeline();
+                }
+                return;
+            }
+            
+            // Regular field editing
+            const newValue = prompt(`Edit ${field}:`, item[field] || '');
+            if (newValue !== null) {
+                if (field.includes('Cost')) {
+                    item[field] = parseFloat(newValue) || 0;
+                } else {
+                    item[field] = newValue;
+                }
+                saveData();
+                renderBudgetDetails();
+                renderDashboard();
+                renderTimeline();
+            }
+        }
+
+        function deleteItem(categoryId, itemIndex) {
+            if (confirm('Delete this item?')) {
+                const cat = weddingData.categories.find(c => c.id === categoryId);
+                cat.items.splice(itemIndex, 1);
+                saveData();
+                renderBudgetDetails();
+                renderDashboard();
+                renderTimeline();
+            }
+        }
+
+        // Guest Management
+        function updateManualInvited() {
+            const manualCount = parseInt(document.getElementById('guests-invited').value) || 0;
+            weddingData.guests.invited = manualCount;
+            weddingData.guests.manualInvitedCount = manualCount; // Store that this was manually set
+            saveData();
+            renderDashboard();
+        }
+
+        function addGuest() {
+            const name = prompt('Guest name (e.g., "John & Jane Smith"):');
+            if (name && name.trim()) {
+                const partySize = parseInt(prompt('How many people? (1 for single guest, 2 for couple, etc.)', '1')) || 1;
+                weddingData.guests.list.push({ 
+                    name: name.trim(), 
+                    partySize: partySize,
+                    status: 'Invited (no response)', 
+                    table: null 
+                });
+                saveData();
+                renderGuestList();
+                renderDashboard();
+            }
+        }
+
+        function renderGuestList() {
+            // Count total PEOPLE (sum of party sizes)
+            const totalInvited = weddingData.guests.list.reduce((sum, g) => sum + (g.partySize || 1), 0);
+            const totalRSVPd = weddingData.guests.list.filter(g => g.status === 'RSVP\'d Yes' || g.status === 'RSVP\'d No').reduce((sum, g) => sum + (g.partySize || 1), 0);
+            const totalConfirmed = weddingData.guests.list.filter(g => g.status === 'RSVP\'d Yes').reduce((sum, g) => sum + (g.partySize || 1), 0);
+            
+            // Update display fields
+            document.getElementById('guests-invited').value = totalInvited;
+            document.getElementById('guests-rsvpd').value = totalRSVPd;
+            document.getElementById('guests-confirmed').value = totalConfirmed;
+            
+            // Check if confirmed count changed
+            const confirmedChanged = weddingData.guests.confirmed !== totalConfirmed;
+            
+            // Update stored values
+            weddingData.guests.invited = totalInvited;
+            weddingData.guests.rsvpd = totalRSVPd;
+            weddingData.guests.confirmed = totalConfirmed;
+            
+            // Only recalculate and re-render if confirmed count changed
+            if (confirmedChanged) {
+                recalculatePerPersonItems();
+                renderBudgetDetails();
+                renderDashboard();
+            }
+
+            let html = '';
+            
+            if (weddingData.guests.list.length === 0) {
+                html = '<p style="text-align: center; color: var(--muted-foreground);">No guests added yet. Click "+ Add Guest" to start your list!</p>';
+            } else {
+                // Add header row
+                html = `
+                    <div class="item-row" style="background: var(--muted); font-weight: 600; border-bottom: 2px solid var(--border);">
+                        <div>Guest Name</div>
+                        <div># People</div>
+                        <div>RSVP Status</div>
+                        <div>Table</div>
+                        <div>Actions</div>
+                    </div>
+                `;
+                
+                // Add guest rows
+                html += weddingData.guests.list.map((guest, idx) => `
+                    <div class="item-row">
+                        <div><strong class="editable" onclick="editGuest(${idx}, 'name')" title="Click to edit">${guest.name}</strong></div>
+                        <div class="editable" onclick="editGuest(${idx}, 'partySize')" title="Click to edit">${guest.partySize || 1}</div>
+                        <div class="editable" onclick="editGuest(${idx}, 'status')" title="Click to update">${guest.status}</div>
+                        <div class="editable" onclick="editGuest(${idx}, 'table')" title="Click to assign">${guest.table || 'Click to assign'}</div>
+                        <button class="delete-btn" onclick="deleteGuest(${idx})">Delete</button>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('guest-list').innerHTML = html;
+        }
+
+        function editGuest(index, field) {
+            const guest = weddingData.guests.list[index];
+            
+            if (field === 'partySize') {
+                const newSize = prompt('How many people in this party?', guest.partySize || 1);
+                if (newSize && !isNaN(newSize)) {
+                    guest.partySize = parseInt(newSize);
+                    saveData();
+                    renderGuestList();
+                    renderDashboard();
+                }
+                return;
+            } else if (field === 'table') {
+                // Show available tables
+                if (weddingData.seating.tables.length === 0) {
+                    alert('Please create tables first in the Seating Chart tab!');
+                    return;
+                }
+                
+                const tableOptions = weddingData.seating.tables.map((t, i) => {
+                    const assignedCount = weddingData.guests.list.filter(g => g.table === t.name).length;
+                    return `${i + 1}. ${t.name} (${assignedCount}/${t.capacity})`;
+                }).join('\n');
+                
+                const choice = prompt(`Assign to which table?\n\n${tableOptions}\n\n0. No table\n\nEnter number:`, '');
+                
+                if (choice !== null) {
+                    const tableIdx = parseInt(choice) - 1;
+                    if (choice === '0') {
+                        guest.table = null;
+                    } else if (tableIdx >= 0 && tableIdx < weddingData.seating.tables.length) {
+                        guest.table = weddingData.seating.tables[tableIdx].name;
+                    }
+                    saveData();
+                    renderGuestList();
+                    renderSeatingChart();
+                    renderDashboard();
+                }
+                return;
+            } else if (field === 'status') {
+                const statuses = ['Invited (no response)', 'RSVP\'d Yes', 'RSVP\'d No'];
+                const statusOptions = statuses.map((s, i) => `${i + 1}. ${s}`).join('\n');
+                const choice = prompt(`Update RSVP Status:\n\n${statusOptions}\n\nEnter number:`, '1');
+                
+                if (choice !== null) {
+                    const statusIdx = parseInt(choice) - 1;
+                    if (statusIdx >= 0 && statusIdx < statuses.length) {
+                        guest.status = statuses[statusIdx];
+                        saveData();
+                        renderGuestList();
+                        renderDashboard();
+                    }
+                }
+                return;
+            } else {
+                const newValue = prompt(`Edit ${field}:`, guest[field] || '');
+                if (newValue !== null && newValue.trim()) {
+                    guest[field] = newValue.trim();
+                }
+            }
+            
+            saveData();
+            renderGuestList();
+            renderSeatingChart();
+        }
+
+        function deleteGuest(index) {
+            if (confirm('Delete this guest?')) {
+                weddingData.guests.list.splice(index, 1);
+                saveData();
+                renderGuestList();
+                renderSeatingChart(); // FIX: Update seating chart when guest is deleted
+                renderDashboard();
+            }
+        }
+
+        // Seating Chart
+        function addTable() {
+            const name = prompt('Table name (e.g., Table 1, Head Table):');
+            const capacity = parseInt(prompt('Table capacity:', '8'));
+            if (name) {
+                weddingData.seating.tables.push({ name: name, capacity: capacity, guests: [] });
+                saveData();
+                renderSeatingChart();
+            }
+        }
+
+        function renderSeatingChart() {
+            const html = weddingData.seating.tables.map((table, idx) => {
+                // Count guests assigned to this table
+                const assignedGuests = weddingData.guests.list.filter(g => g.table === table.name);
+                const totalPeople = assignedGuests.reduce((sum, g) => sum + (g.partySize || 1), 0);
+                const isFilled = assignedGuests.length > 0;
+                
+                return `
+                    <div class="table-card ${isFilled ? 'filled' : ''}" onclick="viewTable(${idx})">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">${table.name}</div>
+                        <div style="font-size: 0.875rem; color: var(--muted-foreground);">${totalPeople} / ${table.capacity} guests</div>
+                        ${assignedGuests.length > 0 ? `<div style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--muted-foreground); line-height: 1.4;">${assignedGuests.map(g => g.name).join('<br>')}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('seating-chart').innerHTML = html || '<p style="text-align: center; color: var(--muted-foreground);">No tables yet. Click "+ Add Table" to start.</p>';
+        }
+
+        function viewTable(index) {
+            const table = weddingData.seating.tables[index];
+            const assignedGuests = weddingData.guests.list.filter(g => g.table === table.name);
+            const totalPeople = assignedGuests.reduce((sum, g) => sum + (g.partySize || 1), 0);
+            
+            let message = `${table.name}\nCapacity: ${table.capacity}\n\n`;
+            
+            if (assignedGuests.length > 0) {
+                message += `Guests (${totalPeople} people):\n`;
+                assignedGuests.forEach(g => {
+                    message += `• ${g.name}`;
+                    if (g.partySize > 1) {
+                        message += ` (${g.partySize} people)`;
+                    }
+                    message += ` - ${g.status}\n`;
+                });
+            } else {
+                message += 'No guests assigned yet.';
+            }
+            
+            message += '\n\nWhat would you like to do?\n1. Edit table name/capacity\n2. Delete table\n3. Cancel';
+            
+            const choice = prompt(message, '3');
+            
+            if (choice === '1') {
+                editTable(index);
+            } else if (choice === '2') {
+                if (confirm(`Delete ${table.name}? All guests will be unassigned.`)) {
+                    assignedGuests.forEach(g => g.table = null);
+                    weddingData.seating.tables.splice(index, 1);
+                    saveData();
+                    renderSeatingChart();
+                    renderGuestList();
+                }
+            }
+        }
+
+        function editTable(index) {
+            const table = weddingData.seating.tables[index];
+            const oldName = table.name;
+            
+            const newName = prompt('Table name:', table.name);
+            if (newName && newName.trim()) {
+                const newCapacity = prompt('Table capacity:', table.capacity);
+                if (newCapacity && !isNaN(newCapacity)) {
+                    // Update table
+                    table.name = newName.trim();
+                    table.capacity = parseInt(newCapacity);
+                    
+                    // Update guest assignments if name changed
+                    if (oldName !== table.name) {
+                        weddingData.guests.list.forEach(guest => {
+                            if (guest.table === oldName) {
+                                guest.table = table.name;
+                            }
+                        });
+                    }
+                    
+                    saveData();
+                    renderSeatingChart();
+                    renderGuestList();
+                }
+            }
+        }
+
+        // Timeline
+        function renderTimeline() {
+            // Don't auto-fill date - let user enter it fresh
+            updateTimeline();
+        }
+
+        function updateTimeline() {
+            var dateInput = document.getElementById('wedding-date');
+            var weddingDate = dateInput.value;
+            
+            if (weddingDate) {
+                weddingData.weddingDate = weddingDate;
+                saveData();
+            }
+
+            var container = document.getElementById('timeline-content');
+            
+            if (!weddingDate) {
+                container.innerHTML = '<p style="text-align: center; color: var(--muted-foreground); padding: 2rem;">Enter your wedding date above to see your planning timeline!</p>';
+                return;
+            }
+
+            // Parse date properly to avoid timezone issues
+            var parts = weddingDate.split('-');
+            var wedding = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            var html = '';
+            
+            // Combine default milestones and custom events
+            var allEvents = [];
+            
+            // Add default milestones
+            for (var i = 0; i < timelineMilestones.length; i++) {
+                var milestone = timelineMilestones[i];
+                var dueDate = new Date(wedding);
+                dueDate.setMonth(wedding.getMonth() - milestone.months);
+                allEvents.push({
+                    type: 'milestone',
+                    dueDate: dueDate,
+                    months: milestone.months,
+                    title: milestone.title,
+                    description: milestone.description,
+                    categoryId: milestone.categoryId,
+                    isWeddingDay: milestone.isWeddingDay
+                });
+            }
+            
+            // Add custom events
+            for (var j = 0; j < weddingData.customTimeline.length; j++) {
+                var evt = weddingData.customTimeline[j];
+                allEvents.push({
+                    type: 'custom',
+                    dueDate: new Date(evt.date),
+                    title: evt.title,
+                    description: evt.description,
+                    index: j,
+                    completed: evt.completed
+                });
+            }
+            
+            // Sort by date
+            allEvents.sort(function(a, b) { return a.dueDate - b.dueDate; });
+            
+            // Render all events
+            for (var k = 0; k < allEvents.length; k++) {
+                var event = allEvents[k];
+                var isPast = event.dueDate < today;
+                var isCompleted = event.type === 'milestone' ? checkMilestoneComplete(event) : event.completed;
+                var daysUntil = Math.ceil((event.dueDate - today) / (1000 * 60 * 60 * 24));
+                var isWeddingDay = event.isWeddingDay || false;
+                
+                var statusIcon = '';
+                var statusClass = '';
+                
+                if (isWeddingDay) {
+                    statusIcon = '💍';
+                    statusClass = 'wedding-day';
+                } else if (isCompleted) {
+                    statusIcon = '✅';
+                    statusClass = 'completed';
+                } else if (isPast) {
+                    statusIcon = '⚠️';
+                    statusClass = 'overdue';
+                } else if (daysUntil <= 30) {
+                    statusIcon = '🔔';
+                    statusClass = 'upcoming';
+                } else {
+                    statusIcon = '☐';
+                    statusClass = 'pending';
+                }
+                
+                var categoryName = null;
+                var categoryItems = [];
+                if (event.categoryId) {
+                    for (var m = 0; m < weddingData.categories.length; m++) {
+                        if (weddingData.categories[m].id === event.categoryId) {
+                            categoryName = weddingData.categories[m].name;
+                            categoryItems = weddingData.categories[m].items || [];
+                            break;
+                        }
+                    }
+                }
+                
+                // Build completion details for milestones
+                var completionDetails = '';
+                if (event.type === 'milestone' && isCompleted && categoryItems.length > 0) {
+                    completionDetails = '<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem;">✓ Auto-completed - Items added:<br>';
+                    for (var n = 0; n < categoryItems.length; n++) {
+                        var displayName = categoryItems[n].vendor || categoryItems[n].name;
+                        completionDetails += '&nbsp;&nbsp;• ' + displayName + '<br>';
+                    }
+                    completionDetails += '</div>';
+                }
+                
+                html += '<div class="timeline-item ' + statusClass + '">' +
+                    '<div style="display: flex; align-items: start; gap: 1rem;">' +
+                    '<span style="font-size: 1.5rem;">' + statusIcon + '</span>' +
+                    '<div style="flex: 1;">' +
+                    '<div style="font-weight: 600; margin-bottom: 0.25rem;">' +
+                    event.title +
+                    (event.type === 'custom' ? ' <span style="font-size: 0.75rem; color: var(--muted-foreground);">(Custom)</span>' : '') +
+                    '</div>' +
+                    '<div style="font-size: 0.875rem; color: var(--muted-foreground); margin-bottom: 0.5rem;">' + event.description + '</div>' +
+                    '<div style="font-size: 0.75rem; color: var(--muted-foreground);">' +
+                    event.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+                    (!isCompleted && !isPast ? ' (' + daysUntil + ' days)' : '') +
+                    (categoryName ? ' • ' + categoryName : '') +
+                    '</div>' +
+                    completionDetails +
+                    (event.type === 'custom' && isCompleted ? '<div style="font-size: 0.75rem; color: var(--primary); margin-top: 0.25rem;">✓ Completed</div>' : '') +
+                    '</div>' +
+                    (event.type === 'custom' ? '<button class="delete-btn" onclick="deleteCustomEvent(' + event.index + '); event.stopPropagation();">Delete</button>' : '') +
+                    '</div>' +
+                    '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function checkMilestoneComplete(milestone) {
+            if (!milestone.categoryId) return false;
+            
+            var category = null;
+            for (var i = 0; i < weddingData.categories.length; i++) {
+                if (weddingData.categories[i].id === milestone.categoryId) {
+                    category = weddingData.categories[i];
+                    break;
+                }
+            }
+            return category && category.items.length > 0;
+        }
+
+        function addCustomTimelineItem() {
+            // Build numbered list
+            var options = '📅 SUGGESTED EVENTS (enter number to select):\n\n';
+            for (var i = 0; i < timelineEventSuggestions.length; i++) {
+                var event = timelineEventSuggestions[i];
+                options += (i + 1) + '. ' + event.title + ' - ' + event.description + '\n';
+            }
+            options += '\n' + (timelineEventSuggestions.length + 1) + '. ✏️ Add Custom Event\n\n';
+            
+            var choice = prompt(options + 'Enter number:');
+            if (!choice) return;
+            
+            var choiceNum = parseInt(choice);
+            
+            var title = '';
+            var description = '';
+            
+            if (choiceNum > 0 && choiceNum <= timelineEventSuggestions.length) {
+                // Selected a suggested event
+                var selected = timelineEventSuggestions[choiceNum - 1];
+                title = selected.title;
+                description = selected.description;
+            } else if (choiceNum === timelineEventSuggestions.length + 1) {
+                // Custom event
+                title = prompt('Enter custom event title:');
+                if (!title) return;
+                description = prompt('Event description (optional):', '');
+            } else {
+                alert('Invalid selection');
+                return;
+            }
+            
+            var date = prompt('Event date for "' + title + '" (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!date) return;
+            
+            weddingData.customTimeline.push({
+                title: title,
+                description: description || '',
+                date: date,
+                completed: false
+            });
+            
+            saveData();
+            updateTimeline();
+            alert('✅ Added: ' + title);
+        }
+
+        function deleteCustomEvent(index) {
+            if (confirm('Delete this event?')) {
+                weddingData.customTimeline.splice(index, 1);
+                saveData();
+                updateTimeline();
+            }
+        }
+
+        // AI Suggestions
+        function showAISuggestions() {
+            const totalSpent = calculateTotalSpent();
+            const remaining = weddingData.totalBudget - totalSpent;
+            const cushion = weddingData.totalBudget * 0.1;
+
+            let suggestions = '';
+
+            if (remaining < cushion) {
+                suggestions += `
+                    <div class="ai-suggestion">
+                        <div class="ai-header">
+                            <span class="ai-icon">💡</span>
+                            <strong>Budget Alert</strong>
+                        </div>
+                        <p>You're running low on budget! Consider reviewing your most expensive categories for potential savings.</p>
+                    </div>
+                `;
+            }
+
+            if (weddingData.guests.confirmed === 0 && weddingData.categories.find(c => c.id === 'catering').items.length > 0) {
+                suggestions += `
+                    <div class="ai-suggestion">
+                        <div class="ai-header">
+                            <span class="ai-icon">🎯</span>
+                            <strong>Guest Count Tip</strong>
+                        </div>
+                        <p>You've added catering items but haven't confirmed your guest count yet. Final headcount affects your catering costs!</p>
+                    </div>
+                `;
+            }
+
+            document.getElementById('ai-suggestions-container').innerHTML = suggestions;
+        }
+
+        // Export/Import
+        function exportData() {
+            const dataStr = JSON.stringify(weddingData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'wedding-budget-backup.json';
+            a.click();
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        weddingData = JSON.parse(event.target.result);
+                        saveData();
+                        location.reload();
+                    } catch (err) {
+                        alert('Error importing data: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Print Functions
+        function printPlanner() {
+            // Dashboard print = Print EVERYTHING
+            renderDashboard();
+            renderBudgetDetails();
+            renderGuestList();
+            renderSeatingChart();
+            updateTimeline();
+            
+            // Mark all tabs as print-active
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('print-active');
+            });
+            
+            setTimeout(() => {
+                window.print();
+                // Remove print-active after printing
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('print-active');
+                });
+            }, 100);
+        }
+        
+        function printBudgetDetails() {
+            renderBudgetDetails();
+            
+            // Only print budget tab
+            document.getElementById('budget').classList.add('print-active');
+            
+            setTimeout(() => {
+                window.print();
+                document.getElementById('budget').classList.remove('print-active');
+            }, 100);
+        }
+        
+        function printGuestList() {
+            renderGuestList();
+            
+            // Only print guests tab
+            document.getElementById('guests').classList.add('print-active');
+            
+            setTimeout(() => {
+                window.print();
+                document.getElementById('guests').classList.remove('print-active');
+            }, 100);
+        }
+        
+        function printSeatingChart() {
+            renderSeatingChart();
+            
+            // Only print seating tab
+            document.getElementById('seating').classList.add('print-active');
+            
+            setTimeout(() => {
+                window.print();
+                document.getElementById('seating').classList.remove('print-active');
+            }, 100);
+        }
+        
+        function printTimeline() {
+            updateTimeline();
+            
+            // Only print timeline tab
+            document.getElementById('timeline').classList.add('print-active');
+            
+            setTimeout(() => {
+                window.print();
+                document.getElementById('timeline').classList.remove('print-active');
+            }, 100);
+        }
+
+        function clearAllData() {
+            if (confirm('⚠️ This will delete ALL your wedding planning data. Are you sure?')) {
+                if (confirm('This cannot be undone! Export a backup first if needed. Continue?')) {
+                    if (storageAvailable) {
+                        try {
+                            localStorage.removeItem('weddingPlannerData');
+                        } catch (e) {
+                            console.error('Failed to clear data:', e);
+                        }
+                    }
+                    location.reload();
+                }
+            }
+        }
+
+        // Modal System
+        let modalResolve = null;
+
+        function openModal({ title, description, options }) {
+            return new Promise((resolve) => {
+                modalResolve = resolve;
+                
+                const overlay = document.getElementById('modal-overlay');
+                const modalTitle = document.getElementById('modal-title');
+                const modalDescription = document.getElementById('modal-description');
+                const modalBody = document.getElementById('modal-body');
+                
+                modalTitle.textContent = title;
+                modalDescription.textContent = description || '';
+                modalDescription.style.display = description ? 'block' : 'none';
+                
+                modalBody.innerHTML = '';
+                options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.className = 'modal-option';
+                    btn.innerHTML = `
+                        <div class="modal-option-title">${option.label}</div>
+                        ${option.description ? `<div class="modal-option-description">${option.description}</div>` : ''}
+                    `;
+                    btn.onclick = () => {
+                        closeModal();
+                        resolve(option.value);
+                    };
+                    modalBody.appendChild(btn);
+                });
+                
+                overlay.classList.add('active');
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            if (modalResolve) {
+                modalResolve(null);
+                modalResolve = null;
+            }
+        }
+    </script>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title" class="modal-title"></h3>
+                <p id="modal-description" class="modal-description"></p>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" class="btn-outline">Cancel</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
